@@ -1,0 +1,273 @@
+---
+title: "Melanoma - Broad Celltypes"
+output: html_notebook
+---
+
+
+```{r}
+suppressPackageStartupMessages({
+  library(Seurat)
+  library(ggplot2)
+  library(data.table)
+  library(dplyr)
+  library(tidyr)
+})
+```
+
+```{r}
+# sc <- reticulate::import('scanpy')
+# adata <- sc$read("/home/gabrielarapozo/sc_breast/data/colab_ufv/02_object/melanoma.h5ad")
+# exprs <- t(adata$raw$X)
+# colnames(exprs) <- adata$raw$obs_names$to_list()
+# rownames(exprs) <- adata$raw$var_names$to_list()
+# exprs <- exprs %>% as.data.frame()
+# seurat <- CreateSeuratObject(exprs)
+# seurat <- AddMetaData(seurat, adata$obs)
+# embedding <- adata$obsm["X_umap"]
+# rownames(embedding) <- adata$obs_names$to_list()
+# colnames(embedding) <- c("UMAP_1", "UMAP_2")
+# seurat[["UMAP"]] <- CreateDimReducObject(embedding, key = "UMAP_")
+# saveRDS(seurat, '/home/gabrielarapozo/sc_breast/data/colab_ufv/02_object/melanoma_seurat.rds')
+```
+
+```{r}
+seurat <- readRDS('/home/gabrielarapozo/sc_breast/data/colab_ufv/02_object/melanoma_seurat.rds')
+```
+
+
+```{r}
+pal = c("#7F3C8D", "#11A579", "#3969AC", "#F2B701", "#E73F74",
+         "#80BA5A", "#E68310", "#008695", "#A5AA99")
+
+tema = list(
+  ggplot2::theme(
+    axis.title = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    plot.title = element_text(size = 10)
+  ),
+  NoLegend()
+)
+leg = theme(
+  legend.title = element_blank(),
+  plot.title = element_text(size = 18, face = "bold"),
+  plot.subtitle = element_text(size = 16),
+  axis.text.x = element_text(
+    size = 16,
+    angle = 90,
+    hjust = 1
+  ),
+  axis.text.y = element_text(size = 16),
+  axis.title.y = element_text(size = 16),
+  axis.title.x = element_text(size = 16),
+  legend.text = element_text(size = 16)
+)
+```
+
+
+```{r fig.height=4, fig.width=13}
+p5 <- DimPlot(seurat, group.by = 'celltype', cols = pal)
+p6 <- DimPlot(seurat, group.by = 'celltype', cols = pal, label = TRUE, label.box = TRUE)
+
+(p5|p6)
+```
+
+```{r}
+seurat <- NormalizeData(seurat)
+seurat <- ScaleData(seurat)
+```
+
+```{r}
+Idents(seurat) <- seurat$celltype
+```
+
+```{r fig.height=10, fig.width=14}
+markers <- c("CD79A", "CD79B", "MS4A1","MZB1")
+
+p1 <-
+  FeaturePlot(
+    object = seurat,
+    features = markers,
+    cols = c('#F4FAFC',"#F2B701"),
+    min.cutoff = 1,
+    max.cutoff = 15,
+    order = TRUE,
+    ncol = 4
+  )
+p2 <-
+  DotPlot(object = seurat, features = markers) + scale_colour_gradient2(low = "#F2B701", high = "#008695")
+p3 <-
+  VlnPlot(
+    object = seurat,
+    features = markers,
+    pt.size = 0,
+    cols = c("#F2B701","#008695"),
+    idents = c('Folicular B Cell', 'Plasma B Cell'),
+    ncol = 4
+  )
+
+(p1) / 
+  (p3) /
+  (p2)
+```
+
+```{r fig.height=10, fig.width=14}
+markers <- c("LYZ", "AIF1", "CD68")
+
+p1 <-
+  FeaturePlot(
+    object = seurat,
+    features = markers,
+    cols = c('#F4FAFC',"#E73F74"),
+    min.cutoff = 1,
+    max.cutoff = 15,
+    order = TRUE,
+    ncol = 3
+  )
+p2 <-
+  DotPlot(object = seurat, features = markers) + scale_colour_gradient2(low = '#F4FAFC', high = "#E73F74")
+p3 <-
+  VlnPlot(
+    object = seurat,
+    features = markers,
+    pt.size = 0,
+    cols = c("#E73F74","#E73F74"),
+    idents = c("Myeloid"),
+    ncol = 3
+  )
+
+(p1) / 
+  (p3) /
+  (p2)
+```
+
+```{r fig.height=7, fig.width=16}
+markers <- c("CD4", "CD3E", "NCAM1", "CD8A")
+
+p1 <-
+  FeaturePlot(
+    object = seurat,
+    features = markers,
+    cols = c('#F4FAFC',"#7F3C8D"),
+    min.cutoff = 1,
+    max.cutoff = 15,
+    order = TRUE,
+    ncol = 2
+  )
+p2 <-
+  DotPlot(object = seurat, features = markers) + scale_colour_gradient2(low = '#F4FAFC', high = "#7F3C8D")
+p3 <-
+  VlnPlot(
+    object = seurat,
+    features = markers,
+    pt.size = 0,
+    cols = c("#7F3C8D", "#80BA5A","#11A579"),
+    idents = c( "CD4 T", "NK", "CD8 T"),
+    ncol = 4
+  )
+
+(p1 |(p3 / p2))
+```
+
+
+```{r fig.height=8, fig.width=14}
+markers <- c("COL1A1", "COL1A2")
+
+p1 <-
+  FeaturePlot(
+    object = seurat,
+    features = markers,
+    cols = c('#F4FAFC',"#E68310"),
+    min.cutoff = 1,
+    max.cutoff = 15,
+    order = TRUE,
+    ncol = 2
+  )
+p2 <-
+  DotPlot(object = seurat, features = markers) + scale_colour_gradient2(low = '#F4FAFC', high = "#E68310")
+p3 <-
+  VlnPlot(
+    object = seurat,
+    features = markers,
+    pt.size = 0,
+    cols = c("#E68310"),
+    idents = c("Fibroblasts"),
+    ncol = 2
+  )
+
+(p1 | p3) /
+  (p2)
+```
+
+
+```{r fig.height=8, fig.width=14}
+markers <- c("LILRA4", "IRF7")
+
+p1 <-
+  FeaturePlot(
+    object = seurat,
+    features = markers,
+    cols = c('#F4FAFC',"#A5AA99"),
+    min.cutoff = 1,
+    max.cutoff = 15,
+    order = TRUE,
+    ncol = 2
+  )
+p2 <-
+  DotPlot(object = seurat, features = markers) + scale_colour_gradient2(low = '#F4FAFC', high = "#A5AA99")
+p3 <-
+  VlnPlot(
+    object = seurat,
+    features = markers,
+    pt.size = 0,
+    cols = c("#A5AA99"),
+    idents = c('pDC'),
+    ncol = 2
+  )
+
+(p1 | p3) /
+  (p2)
+```
+
+
+```{r fig.height=10, fig.width=14}
+markers <- c("PRAME", "PMEL", "MLANA")
+
+p1 <-
+  FeaturePlot(
+    object = seurat,
+    features = markers,
+    cols = c('#F4FAFC',"#3969AC"),
+    min.cutoff = 1,
+    max.cutoff = 15,
+    order = TRUE,
+    ncol = 3
+  )
+p2 <-
+  DotPlot(object = seurat, features = markers) + scale_colour_gradient2(low = '#F4FAFC', high = "#3969AC")
+p3 <-
+  VlnPlot(
+    object = seurat,
+    features = markers,
+    pt.size = 0,
+    cols = c("#3969AC"),
+    idents = c('Malignant'),
+    ncol = 3
+  )
+
+(p1) / 
+  (p3) /
+  (p2)
+```
+
+
+
+
+
+
+
+
+
+
+
+
