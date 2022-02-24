@@ -82,11 +82,12 @@ seurat <- ScaleData(seurat)
 Idents(seurat) <- seurat$celltype
 ```
 
+```{r}
 idents <- seurat$celltype
 deg <- FindAllMarkers(seurat, slot = 'counts', test.use = 'MAST', only.pos = TRUE, min.pct = 0.25)
 top5 <- deg%>% group_by(cluster) %>% top_n(n = 5, wt = avg_log2FC)
 top5
-
+```
 
 ```{r fig.height=10, fig.width=14}
 markers <- c("CD79A", "CD79B", "MS4A1","MZB1")
