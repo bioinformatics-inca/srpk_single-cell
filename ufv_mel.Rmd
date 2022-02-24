@@ -16,7 +16,7 @@ suppressPackageStartupMessages({
 
 ```{r}
 # sc <- reticulate::import('scanpy')
-# adata <- sc$read("/home/gabrielarapozo/sc_breast/data/colab_ufv/02_object/melanoma.h5ad")
+# adata <- sc$read("/colab_ufv/02_object/melanoma.h5ad")
 # exprs <- t(adata$raw$X)
 # colnames(exprs) <- adata$raw$obs_names$to_list()
 # rownames(exprs) <- adata$raw$var_names$to_list()
@@ -27,11 +27,11 @@ suppressPackageStartupMessages({
 # rownames(embedding) <- adata$obs_names$to_list()
 # colnames(embedding) <- c("UMAP_1", "UMAP_2")
 # seurat[["UMAP"]] <- CreateDimReducObject(embedding, key = "UMAP_")
-# saveRDS(seurat, '/home/gabrielarapozo/sc_breast/data/colab_ufv/02_object/melanoma_seurat.rds')
+# saveRDS(seurat, '/colab_ufv/02_object/melanoma_seurat.rds')
 ```
 
 ```{r}
-seurat <- readRDS('/home/gabrielarapozo/sc_breast/data/colab_ufv/02_object/melanoma_seurat.rds')
+seurat <- readRDS('/colab_ufv/02_object/melanoma_seurat.rds')
 ```
 
 
@@ -259,15 +259,3 @@ p3 <-
   (p3) /
   (p2)
 ```
-
-
-
-
-
-
-
-
-
-
-
-
