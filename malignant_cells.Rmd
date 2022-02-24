@@ -15,7 +15,7 @@ suppressPackageStartupMessages({
 
 ```{r}
 # sc <- reticulate::import('scanpy')
-# adata <- sc$read("/home/gabrielarapozo/sc_breast/data/colab_ufv/02_object/malignant_pos_scVI.h5ad")
+# adata <- sc$read("/colab_ufv/02_object/malignant_pos_scVI.h5ad")
 # exprs <- t(adata$raw$X)
 # colnames(exprs) <- adata$raw$obs_names$to_list()
 # rownames(exprs) <- adata$raw$var_names$to_list()
@@ -26,11 +26,11 @@ suppressPackageStartupMessages({
 # rownames(embedding) <- adata$obs_names$to_list()
 # colnames(embedding) <- c("UMAP_1", "UMAP_2")
 # seurat[["UMAP"]] <- CreateDimReducObject(embedding, key = "UMAP_")
-# saveRDS(seurat, '/home/gabrielarapozo/sc_breast/data/colab_ufv/02_object/malignant_seurat.rds')
+# saveRDS(seurat, '/colab_ufv/02_object/malignant_seurat.rds')
 ```
 
 ```{r}
-seurat <- readRDS('/home/gabrielarapozo/sc_breast/data/colab_ufv/02_object/malignant_seurat.rds')
+seurat <- readRDS('/colab_ufv/02_object/malignant_seurat.rds')
 ```
 
 ```{r}
@@ -204,7 +204,7 @@ p10
 ```{r fig.height=3, fig.width=5}
 pal2 <- c("#7F3C8D", "#11A579", "#3969AC", "#F2B701", "#E73F74", "#80BA5A",
           "#E68310", "#008695", "#A5AA99")
-melanoma_seurat <- readRDS('/home/gabrielarapozo/sc_breast/data/colab_ufv/02_object/melanoma_seurat.rds')
+melanoma_seurat <- readRDS('/colab_ufv/02_object/melanoma_seurat.rds')
 p <- DimPlot(melanoma_seurat, group.by = 'celltype', cols = pal2)
 
 p
