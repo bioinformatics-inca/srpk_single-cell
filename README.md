@@ -8,4 +8,4 @@ The output of these scripts can be viewed in html at this link https://drive.goo
 
 
 
-The bioinformatics analysis was performed by Gabriela and Leandro, supervised by Mariana Boroni, PI of the Bioinformatics and Computational Biology Laboratory of the Brazilian National Cancer Institute (INCA).
+The bioinformatics analysis was performed by Gabriela Rapozo and Leandro Santos, supervised by Mariana Boroni, PI of the Bioinformatics and Computational Biology Laboratory of the Brazilian National Cancer Institute (INCA).
