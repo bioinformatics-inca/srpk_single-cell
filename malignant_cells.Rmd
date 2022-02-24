@@ -1,0 +1,222 @@
+---
+title: "Malignant Cells Analysis"
+output: html_notebook
+---
+
+```{r}
+suppressPackageStartupMessages({
+  library(Seurat)
+  library(ggplot2)
+  library(data.table)
+  library(dplyr)
+  library(tidyr)
+})
+```
+
+```{r}
+# sc <- reticulate::import('scanpy')
+# adata <- sc$read("/home/gabrielarapozo/sc_breast/data/colab_ufv/02_object/malignant_pos_scVI.h5ad")
+# exprs <- t(adata$raw$X)
+# colnames(exprs) <- adata$raw$obs_names$to_list()
+# rownames(exprs) <- adata$raw$var_names$to_list()
+# exprs <- exprs %>% as.data.frame()
+# seurat <- CreateSeuratObject(exprs)
+# seurat <- AddMetaData(seurat, adata$obs)
+# embedding <- adata$obsm["X_umap"]
+# rownames(embedding) <- adata$obs_names$to_list()
+# colnames(embedding) <- c("UMAP_1", "UMAP_2")
+# seurat[["UMAP"]] <- CreateDimReducObject(embedding, key = "UMAP_")
+# saveRDS(seurat, '/home/gabrielarapozo/sc_breast/data/colab_ufv/02_object/malignant_seurat.rds')
+```
+
+```{r}
+seurat <- readRDS('/home/gabrielarapozo/sc_breast/data/colab_ufv/02_object/malignant_seurat.rds')
+```
+
+```{r}
+pal = c("#75859d", "#63d6de", "#4e91cc", "#3969AC", "#4d90a2")
+
+tema = list(
+  ggplot2::theme(
+    axis.title = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    plot.title = element_text(size = 10)
+  ),
+  NoLegend()
+)
+leg = theme(
+  legend.title = element_blank(),
+  plot.title = element_text(size = 18, face = "bold"),
+  plot.subtitle = element_text(size = 16),
+  axis.text.x = element_text(
+    size = 16,
+    angle = 90,
+    hjust = 1
+  ),
+  axis.text.y = element_text(size = 16),
+  axis.title.y = element_text(size = 16),
+  axis.title.x = element_text(size = 16),
+  legend.text = element_text(size = 16)
+)
+```
+
+
+```{r fig.height=5, fig.width=5}
+p1 <- DimPlot(seurat, group.by = 'celltype', cols = "#3969AC")
+
+p1
+```
+```{r fig.height=5, fig.width=8}
+markers <- c("MLANA")
+
+p2 <-
+  FeaturePlot(
+    object = seurat,
+    slot = 'counts',
+    features = markers,
+    cols = c('#F4FAFC',  "#3969AC"),
+    min.cutoff = 0,
+    max.cutoff = 1,
+    order = TRUE,
+    ncol = 1
+  )
+
+p3 <-
+  VlnPlot(
+    object = seurat,
+    slot = 'counts',
+    flip = FALSE,
+    features = markers,
+    pt.size = 0,
+    cols = pal,
+    ncol = 1
+  )
+
+(p2 | p3)
+
+```
+
+```{r fig.height=5, fig.width=5}
+p4 <- DimPlot(seurat, group.by = 'leiden_0.3', cols = pal, label.box = TRUE)
+
+p4
+```
+
+```{r}
+Idents(seurat) <- seurat$leiden_0.3
+```
+
+
+```{r fig.height=8, fig.width=12}
+markers <- c("SRPK1", "SRPK2")
+
+resolution <- seurat$leiden_0.3
+resolution <- resolution %>% as.data.frame()
+cluster_1 <- row.names(subset(resolution, subset = . == '1'))
+
+p5 <-
+  DimPlot(
+    object = seurat, 
+    cols = '#F4FAFC',
+    cells.highlight = cluster_1,
+    cols.highlight ="#63d6de",
+    order = TRUE, label = TRUE,
+    label.box = TRUE
+  ) + NoLegend()
+
+p6 <-
+  DotPlot(object = seurat, features = markers, col.min = 0) +  scale_colour_gradient2(low = '#F4FAFC', high = "#63d6de")
+p7 <-
+  VlnPlot(
+    object = seurat,
+    features = markers,
+    pt.size = 0,
+    cols = pal,
+    ncol = 2
+  )
+
+(p5 | p6) /
+  (p7)
+```
+
+
+```{r}
+# http://www.gsea-msigdb.org/gsea/msigdb/cards/REACTOME_CLASS_I_MHC_MEDIATED_ANTIGEN_PROCESSING_PRESENTATION.html
+mhc <- read.delim2("~/sc_breast/data/colab_ufv/02_object/mhc1.txt", header = FALSE)
+mhc <- as.data.frame(mhc[-1,])
+mhc <- as.data.frame(mhc[-1,])
+mhc <- mhc$`mhc[-1, ]` %>% as.list()
+
+# http://www.gsea-msigdb.org/gsea/msigdb/cards/HALLMARK_EPITHELIAL_MESENCHYMAL_TRANSITION.html
+emt <- read.delim2("~/sc_breast/data/colab_ufv/02_object/transition.txt", header = FALSE)
+emt <- as.data.frame(emt[-1,])
+emt <- as.data.frame(emt[-1,])
+emt <- emt$`emt[-1, ]` %>% as.list()
+
+# http://www.gsea-msigdb.org/gsea/msigdb/cards/HALLMARK_WNT_BETA_CATENIN_SIGNALING.html
+wnt <- read.delim2("~/sc_breast/data/colab_ufv/02_object/wnt.txt", header = FALSE)
+wnt <- as.data.frame(wnt[-1,])
+wnt <- as.data.frame(wnt[-1,])
+wnt <- wnt$`wnt[-1, ]` %>% as.list()
+```
+
+
+```{r}
+seurat <-
+  AddModuleScore(object =  seurat,
+                 features = list(mhc),
+                 name = "MHC1_presentation")
+seurat <-
+  AddModuleScore(object =  seurat,
+                 features = list(emt),
+                 name = "e_m_transiton")
+
+seurat <-
+  AddModuleScore(object =  seurat,
+                 features = list(wnt),
+                 name = "wnt_pathway")
+```
+
+
+
+```{r}
+my_comparisons <- list(c("1", "0"), c("1", "2"), c("1", "3"), c("1", "4"))
+compare_means(e_m_transiton1 ~ leiden_0.3, data = seurat@meta.data)
+p8 <- ggboxplot(seurat@meta.data, x = "leiden_0.3", y = "e_m_transiton1", color = "leiden_0.3", palette = pal, add = 'jitter') + ylab("Epithelial Mesenchymal Transition Score") + xlab("Idents") + stat_compare_means(comparisons = my_comparisons)
+p8
+```
+
+```{r}
+my_comparisons <- list(c("1", "0"), c("1", "2"), c("1", "3"), c("1", "4"))
+compare_means(MHC1_presentation1 ~ leiden_0.3, data = seurat@meta.data)
+p9 <- ggboxplot(seurat@meta.data, x = "leiden_0.3", y = "MHC1_presentation1", color = "leiden_0.3", palette = pal, add = 'jitter') + ylab("MHC classs 1 Pathway Score") +  xlab("Idents") + stat_compare_means(comparisons = my_comparisons)
+p9
+```
+
+```{r}
+my_comparisons <- list(c("1", "0"), c("1", "2"), c("1", "3"), c("1", "4"))
+compare_means(wnt_pathway1 ~ leiden_0.3, data = seurat@meta.data)
+p10 <- ggboxplot(seurat@meta.data, x = "leiden_0.3", y = "wnt_pathway1", color = "leiden_0.3", palette = pal, add = 'jitter') + ylab("WNT Beta Catenin Signaling Score") + xlab("Idents") + stat_compare_means(comparisons = my_comparisons)
+p10
+```
+
+```{r fig.height=3, fig.width=5}
+pal2 <- c("#7F3C8D", "#11A579", "#3969AC", "#F2B701", "#E73F74", "#80BA5A",
+          "#E68310", "#008695", "#A5AA99")
+melanoma_seurat <- readRDS('/home/gabrielarapozo/sc_breast/data/colab_ufv/02_object/melanoma_seurat.rds')
+p <- DimPlot(melanoma_seurat, group.by = 'celltype', cols = pal2)
+
+p
+```
+
+
+```{r fig.height=14, fig.width=12}
+(p +ggtitle("") | p4 +ggtitle(""))/ 
+  (p7 | p6)/
+  (plot_spacer()| p9)/
+  (p8 | p10) +plot_annotation(tag_levels = 'A')
+
+
+```
+
