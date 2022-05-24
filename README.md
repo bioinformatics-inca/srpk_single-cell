@@ -9,3 +9,5 @@ The output of these scripts can be viewed in html at this link https://drive.goo
 
 
 The bioinformatics analysis was performed by Gabriela Rapozo and Leandro Santos, supervised by Mariana Boroni, PI of the Bioinformatics and Computational Biology Laboratory of the Brazilian National Cancer Institute (INCA).
+
+[![DOI](https://zenodo.org/badge/461902465.svg)](https://zenodo.org/badge/latestdoi/461902465)
